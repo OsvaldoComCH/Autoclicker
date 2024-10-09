@@ -1,3 +1,7 @@
+/*
+g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
+*/
+
 #ifndef UNICODE
 #define UNICODE
 #endif
@@ -7,7 +11,7 @@
 #include "controls.cpp"
 
 Button CloseBtn, MinimizeBtn;
-Edit TextBox1;
+Edit SpeedEdit, IntervalEdit;
 
 GroupBox Group;
 
@@ -17,23 +21,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
         case WM_CREATE:
         {
-            TextBox1 = Edit(hwnd, NULL, 10, 30, 160, 25);
+            SpeedEdit = Edit(hwnd, NULL, 10, 30, 160, 25);
+            IntervalEdit = Edit(hwnd, NULL, 10, 65, 160, 25);
             CloseBtn = Button(hwnd, L"X", 150, 5, 20, 20, 0);
-            MinimizeBtn = Button(hwnd, L"AAAAAAA", 10, 90, 160, 30);
-        }
-        break;
-        case WM_QUIT:
-        {
+            MinimizeBtn = Button(hwnd, L"-", 125, 5, 20, 20, 0);
         }
         break;
         case WM_COMMAND:
         {
-            if((HWND)lParam == CloseBtn.GetHandle())
+            switch(HIWORD(wParam))
             {
-                if(HIWORD(wParam) == BN_CLICKED)
+                case BN_CLICKED:
                 {
-                    SendMessage(hwnd, WM_CLOSE, 0, 0);
+                    if((HWND)lParam == CloseBtn.GetHandle())
+                    {
+                        SendMessage(hwnd, WM_CLOSE, 0, 0);
+                    }else
+                    if((HWND)lParam == MinimizeBtn.GetHandle())
+                    {
+                        ShowWindow(hwnd, SW_MINIMIZE);
+                    }
                 }
+                break;
             }
         }
         break;
@@ -66,7 +75,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     HWND hwnd = CreateWindowEx
     (
         0, L"MainWindow", L"Vroom-Vroom Autoclicker",
-        WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU,
+        WS_OVERLAPPED,
         CW_USEDEFAULT, CW_USEDEFAULT, 180, 360,
         NULL, NULL, hInstance, NULL
     );

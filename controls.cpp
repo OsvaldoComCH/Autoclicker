@@ -3,12 +3,14 @@
 #endif
 
 #include <windows.h>
+#include <string>
 
 class Button
 {
-    public:
+    private:
     HWND hwnd;
 
+    public:
     Button(){}
 
     Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
@@ -59,8 +61,10 @@ class RadioButton : public Button
 
 class Edit
 {
-    public:
+    private:
     HWND hwnd;
+
+    public:
     Edit(){}
 
     Edit(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height)
@@ -73,5 +77,35 @@ class Edit
             XPos, YPos, Width, Height,
             Parent, NULL, hInstance, NULL
         );
+    }
+
+    unsigned long GetNumber()
+    {
+        wchar_t Text[11];
+        GetWindowText(hwnd, Text, 11);
+        return std::stoul(Text, nullptr);
+    }
+};
+
+class Label
+{
+    private:
+    int XPos, YPos, Length;
+    wchar_t * Text;
+
+    public:
+    Label(){}
+
+    Label(int x, int y, wchar_t * Text, int Length)
+    {
+        this->XPos = x;
+        this->YPos = y;
+        this->Length = Length;
+        this->Text = Text;
+    }
+
+    void Print(HDC hdc)
+    {
+        TextOut(hdc, XPos, YPos, Text, Length);
     }
 };
