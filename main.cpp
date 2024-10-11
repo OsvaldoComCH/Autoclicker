@@ -12,6 +12,7 @@ g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
 
 Button CloseBtn, MinimizeBtn;
 Edit SpeedEdit, IntervalEdit;
+Label Title;
 
 GroupBox Group;
 
@@ -25,6 +26,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             IntervalEdit = Edit(hwnd, NULL, 10, 65, 160, 25);
             CloseBtn = Button(hwnd, L"X", 150, 5, 20, 20, 0);
             MinimizeBtn = Button(hwnd, L"-", 125, 5, 20, 20, 0);
+            Title = Label(5, 5, L"Autoclicker", 12);
         }
         break;
         case WM_COMMAND:
