@@ -85,6 +85,11 @@ class Edit
         GetWindowText(hwnd, Text, 11);
         return std::stoul(Text, nullptr);
     }
+
+    HWND GetHandle()
+    {
+        return hwnd;
+    }
 };
 
 class Label

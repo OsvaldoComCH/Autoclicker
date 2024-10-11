@@ -12,7 +12,7 @@ g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
 
 Button CloseBtn, MinimizeBtn;
 Edit SpeedEdit, IntervalEdit;
-Label Title;
+Label SpeedLabel, IntervalLabel, CPSLabel, UsLabel;
 
 GroupBox Group;
 
@@ -22,11 +22,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
     {
         case WM_CREATE:
         {
-            SpeedEdit = Edit(hwnd, NULL, 10, 30, 160, 25);
-            IntervalEdit = Edit(hwnd, NULL, 10, 65, 160, 25);
+            SpeedEdit = Edit(hwnd, NULL, 10, 30, 130, 25);
+            IntervalEdit = Edit(hwnd, NULL, 10, 80, 130, 25);
             CloseBtn = Button(hwnd, L"X", 150, 5, 20, 20, 0);
             MinimizeBtn = Button(hwnd, L"-", 125, 5, 20, 20, 0);
-            Title = Label(5, 5, L"Autoclicker", 12);
+            SpeedLabel = Label(10, 10, (wchar_t*)L"Speed", 5);
+            CPSLabel = Label(145, 35, (wchar_t*)L"CPS", 3);
+            IntervalLabel = Label(10, 60, (wchar_t*)L"Interval", 8);
+            UsLabel = Label(145, 85, (wchar_t*)L"us", 2);
+
+            SendMessage(SpeedEdit.GetHandle(), WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
+            SendMessage(IntervalEdit.GetHandle(), WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
         }
         break;
         case WM_COMMAND:
@@ -52,7 +58,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
-            FillRect(hdc, &ps.rcPaint, (HBRUSH)1);
+
+            HBRUSH Brush = CreateSolidBrush(RGB(192,192,192));
+            FillRect(hdc, &ps.rcPaint, Brush);
+
+            SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+
+            SetBkColor(hdc, RGB(192,192,192));
+            SpeedLabel.Print(hdc);
+            CPSLabel.Print(hdc);
+            IntervalLabel.Print(hdc);
+            UsLabel.Print(hdc);
+            
+            DeleteObject(Brush);
             EndPaint(hwnd, &ps);
         }
         break;
@@ -60,6 +78,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             return DefWindowProc(hwnd,Msg,wParam,lParam);
         break;
     }
+    return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -78,11 +97,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     (
         0, L"MainWindow", L"Vroom-Vroom Autoclicker",
         WS_OVERLAPPED,
-        CW_USEDEFAULT, CW_USEDEFAULT, 180, 360,
+        CW_USEDEFAULT, CW_USEDEFAULT, 185, 360,
         NULL, NULL, hInstance, NULL
     );
 
     ShowWindow(hwnd, nCmdShow);
+    FreeConsole();
 
     MSG Msg;
 
