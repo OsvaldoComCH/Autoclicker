@@ -5,39 +5,51 @@
 #include <windows.h>
 #include <string>
 
-class Button
+namespace wctrls
 {
-    private:
+
+class Window
+{
+    protected:
     HWND hwnd;
 
+    public:
+    Window(){}
+
+    Window(HWND Parent, const wchar_t * Class, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    {
+        hwnd = CreateWindowEx
+        (
+            0, Class, Text,
+            WS_CHILD | WS_VISIBLE | Style,
+            XPos, YPos, Width, Height,
+            Parent, NULL, (HINSTANCE)GetWindowLongPtr(Parent, GWLP_HINSTANCE), NULL
+        );
+        SendMessage(hwnd, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
+    }
+
+    void Toggle(bool State)
+    {
+        EnableWindow(hwnd, State);
+    }
+
+    constexpr HWND GetHandle()
+    {
+        return hwnd;
+    }
+};
+
+class Button : public Window
+{
     public:
     Button(){}
 
     Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
-    {
-        HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(Parent, GWLP_HINSTANCE);
-        hwnd = CreateWindowEx
-        (
-            0, L"BUTTON", Text,
-            WS_CHILD | WS_VISIBLE | Style,
-            XPos, YPos, Width, Height,
-            Parent, NULL, hInstance, NULL
-        );
-    }
-
-    Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height)
-    {
-        Button(Parent, Text, XPos, YPos, Width, Height, BS_DEFPUSHBUTTON);
-    }
+    : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style){}
 
     int GetState()
     {
         return (int)SendMessage(hwnd, BM_GETSTATE, 0, 0);
-    }
-
-    HWND GetHandle()
-    {
-        return hwnd;
     }
 };
 
@@ -48,6 +60,9 @@ class GroupBox : public Button
 
     GroupBox(HWND Parent, int XPos, int YPos, int Width, int Height)
     : Button(Parent, NULL, XPos, YPos, Width, Height, BS_GROUPBOX){}
+
+    GroupBox(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height)
+    : Button(Parent, Text, XPos, YPos, Width, Height, BS_GROUPBOX){}
 };
 
 class RadioButton : public Button
@@ -55,29 +70,25 @@ class RadioButton : public Button
     public:
     RadioButton(){}
 
-    RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height)
-    : Button(Parent, Text, XPos, YPos, Width, Height, BS_AUTORADIOBUTTON){}
+    RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : Button(Parent, Text, XPos, YPos, Width, Height, BS_AUTORADIOBUTTON | Style){}
 };
 
-class Edit
+class Edit : public Window
 {
-    private:
-    HWND hwnd;
-
     public:
     Edit(){}
 
-    Edit(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height)
-    {
-        HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(Parent, GWLP_HINSTANCE);
-        hwnd = CreateWindowEx
-        (
-            0, L"EDIT", NULL,
-            WS_CHILD | WS_VISIBLE | WS_DLGFRAME | ES_NUMBER | ES_RIGHT,
-            XPos, YPos, Width, Height,
-            Parent, NULL, hInstance, NULL
-        );
-    }
+    Edit(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : Window(Parent, L"EDIT", Text, XPos, YPos, Width, Height, Style){}
+};
+
+class NumberInput : public Edit
+{
+    public:
+    NumberInput(){}
+    NumberInput(HWND Parent, int XPos, int YPos, int Width, int Height, int Style)
+    : Edit(Parent, NULL, XPos, YPos, Width, Height, Style | WS_DLGFRAME | ES_RIGHT | ES_NUMBER){}
 
     unsigned long GetNumber()
     {
@@ -85,32 +96,18 @@ class Edit
         GetWindowText(hwnd, Text, 11);
         return std::stoul(Text, nullptr);
     }
-
-    HWND GetHandle()
-    {
-        return hwnd;
-    }
 };
 
-class Label
+class Label : public Edit
 {
-    private:
-    int XPos, YPos, Length;
-    wchar_t * Text;
-
     public:
     Label(){}
 
-    Label(int x, int y, wchar_t * Text, int Length)
+    Label(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : Edit(Parent, Text, XPos, YPos, Width, Height, Style | ES_READONLY)
     {
-        this->XPos = x;
-        this->YPos = y;
-        this->Length = Length;
-        this->Text = Text;
+        HideCaret(hwnd);
     }
+};
 
-    void Print(HDC hdc)
-    {
-        TextOut(hdc, XPos, YPos, Text, Length);
-    }
 };
