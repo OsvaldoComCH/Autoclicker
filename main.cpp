@@ -8,8 +8,7 @@ g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
 
 #include <windows.h>
 #include <cstdio>
-#include "controls.cpp"
-
+#include "ctrlfunctions.cpp"
 
 wctrls::Button CloseBtn, MinimizeBtn, CustomBtn;
 wctrls::NumberInput SpeedEdit, IntervalEdit;
@@ -116,7 +115,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     HWND hwnd = CreateWindowEx
     (
         0, L"MainWindow", L"Vroom-Vroom Autoclicker",
-        WS_OVERLAPPED,
+        WS_OVERLAPPED, WS_DLGFRAME,
         CW_USEDEFAULT, CW_USEDEFAULT, 185, 360,
         NULL, NULL, hInstance, NULL
     );

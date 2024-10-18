@@ -45,11 +45,16 @@ class Button : public Window
     Button(){}
 
     Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
-    : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style){}
+    : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style | BS_FLAT){}
 
     int GetState()
     {
         return (int)SendMessage(hwnd, BM_GETSTATE, 0, 0);
+    }
+
+    int SetText(const wchar_t * Text)
+    {
+        SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
     }
 };
 
@@ -71,7 +76,7 @@ class RadioButton : public Button
     RadioButton(){}
 
     RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
-    : Button(Parent, Text, XPos, YPos, Width, Height, BS_AUTORADIOBUTTON | Style){}
+    : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTORADIOBUTTON){}
 };
 
 class Edit : public Window
