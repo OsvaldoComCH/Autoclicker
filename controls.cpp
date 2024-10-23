@@ -33,7 +33,7 @@ class Window
         EnableWindow(hwnd, State);
     }
 
-    constexpr HWND GetHandle()
+    HWND GetHandle()
     {
         return hwnd;
     }
@@ -45,14 +45,14 @@ class Button : public Window
     Button(){}
 
     Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
-    : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style | BS_FLAT){}
+    : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style){}
 
     int GetState()
     {
         return (int)SendMessage(hwnd, BM_GETSTATE, 0, 0);
     }
 
-    int SetText(const wchar_t * Text)
+    void SetText(const wchar_t * Text)
     {
         SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
     }
@@ -77,6 +77,15 @@ class RadioButton : public Button
 
     RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTORADIOBUTTON){}
+};
+
+class CheckBox : public Button
+{
+    public:
+    CheckBox(){}
+
+    CheckBox(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTOCHECKBOX){}
 };
 
 class Edit : public Window
