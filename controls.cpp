@@ -33,6 +33,16 @@ class Window
         EnableWindow(hwnd, State);
     }
 
+    void SetText(const wchar_t * Text)
+    {
+        SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
+    }
+
+    void GetText(wchar_t * Buffer, int Size)
+    {
+        GetWindowText(hwnd, Buffer, Size);
+    }
+
     HWND GetHandle()
     {
         return hwnd;
@@ -50,11 +60,6 @@ class Button : public Window
     int GetState()
     {
         return (int)SendMessage(hwnd, BM_GETSTATE, 0, 0);
-    }
-
-    void SetText(const wchar_t * Text)
-    {
-        SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
     }
 };
 
@@ -77,6 +82,11 @@ class RadioButton : public Button
 
     RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTORADIOBUTTON){}
+
+    int GetState()
+    {
+        return (int)SendMessage(hwnd, BM_GETCHECK, 0, 0);
+    }
 };
 
 class CheckBox : public Button
@@ -86,7 +96,21 @@ class CheckBox : public Button
 
     CheckBox(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTOCHECKBOX){}
+
+    int GetState()
+    {
+        return (int)SendMessage(hwnd, BM_GETCHECK, 0, 0);
+    }
 };
+
+class ToggleButton : public CheckBox
+{
+    public:
+    ToggleButton(){}
+
+    ToggleButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : CheckBox(Parent, Text, XPos, YPos, Width, Height, Style | BS_PUSHLIKE){}
+}
 
 class Edit : public Window
 {
@@ -118,10 +142,7 @@ class Label : public Edit
     Label(){}
 
     Label(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
-    : Edit(Parent, Text, XPos, YPos, Width, Height, Style | ES_READONLY)
-    {
-        HideCaret(hwnd);
-    }
+    : Edit(Parent, Text, XPos, YPos, Width, Height, Style | ES_READONLY){}
 };
 
 };

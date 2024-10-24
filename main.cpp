@@ -10,7 +10,8 @@ g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
 #include <cstdio>
 #include "ctrlfunctions.cpp"
 
-wctrls::Button CloseBtn, MinimizeBtn, CustomBtn, ActivateBtn, StartBtn;
+wctrls::Button CloseBtn, MinimizeBtn;
+wctrls::ToggleButton CustomBtn, ActivateBtn, StartBtn;
 wctrls::NumberInput SpeedEdit, IntervalEdit;
 wctrls::Label SpeedLabel, IntervalLabel, CPSLabel, UsLabel, Title;
 wctrls::RadioButton LeftRadio, RightRadio, CustomRadio;
@@ -37,17 +38,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             IntervalLabel = Label(hwnd, L"Interval", 95, 40, 70, 15, 0);
             UsLabel = Label(hwnd, L"us", 150, 58, 25, 15, 0);
 
-            ToggleCheck = CheckBox(hwnd, L"Toggle", 60, 85, 60, 20, 0);
+            ToggleCheck = CheckBox(hwnd, L"Toggle Mode", 45, 85, 90, 20, 0);
 
             Group = GroupBox(hwnd, 10, 110, 160, 120);
 
             LeftRadio = RadioButton(Group.GetHandle(), L"Mouse Left", 10, 10, 140, 20, 0);
             RightRadio = RadioButton(Group.GetHandle(), L"Mouse Right", 10, 30, 140, 20, 0);
             CustomRadio = RadioButton(Group.GetHandle(), L"Custom", 10, 50, 140, 20, 0);
-            CustomBtn = Button(Group.GetHandle(), L"Key: NUMPAD0", 10, 70, 140, 40, 0);
+            CustomBtn = Button(Group.GetHandle(), L"Key: NUMPAD0", 10, 70, 140, 40, BS_PUSHBUTTON);
 
-            ActivateBtn = Button(hwnd, L"Activate: NUMPAD0", 20, 240, 140, 40, 0);
-            StartBtn = Button(hwnd, L"Start", 30, 290, 120, 30, 0);
+            CustomBtn.Toggle(0);
+            SendMessage(LeftRadio.GetHandle(), BM_SETCHECK, BST_CHECKED, 0);
+
+            ActivateBtn = Button(hwnd, L"Activate: NUMPAD0", 20, 240, 140, 40, BS_PUSHBUTTON);
+            StartBtn = Button(hwnd, L"Start", 30, 290, 120, 30, BS_PUSHBUTTON);
         }
         break;
         case WM_COMMAND:
@@ -63,6 +67,56 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     if((HWND)lParam == MinimizeBtn.GetHandle())
                     {
                         ShowWindow(hwnd, SW_MINIMIZE);
+                    }else
+                    if((HWND)lParam == CustomRadio.GetHandle())
+                    {
+                        CustomBtn.Toggle(1);
+                    }else
+                    if((HWND)lParam == LeftRadio.GetHandle())
+                    {
+                        CustomBtn.Toggle(0);
+                    }else
+                    if((HWND)lParam == RightRadio.GetHandle())
+                    {
+                        CustomBtn.Toggle(0);
+                    }else
+                    if((HWND)lParam == StartBtn.GetHandle())
+                    {
+                        if(StartBtn.GetState() == BST_CHECKED)
+                        {
+                            StartBtn.SetText(L"Stop");
+                            Title.SetText(L"Autoclicker is running...");
+                            
+                            SpeedEdit.Toggle(0);
+                            IntervalEdit.Toggle(0);
+                            CloseBtn.Toggle(0);
+                            MinimizeBtn.Toggle(0);
+                            ToggleCheck.Toggle(0);
+                            LeftRadio.Toggle(0);
+                            RightRadio.Toggle(0);
+                            CustomRadio.Toggle(0);
+                            CustomBtn.Toggle(0);
+                            ActivateBtn.Toggle(0);
+                        }else
+                        {
+                            StartBtn.SetText(L"Start");
+                            Title.SetText(L"Autoclicker has stopped.");
+                            
+                            SpeedEdit.Toggle(1);
+                            IntervalEdit.Toggle(1);
+                            CloseBtn.Toggle(1);
+                            MinimizeBtn.Toggle(1);
+                            ToggleCheck.Toggle(1);
+                            LeftRadio.Toggle(1);
+                            RightRadio.Toggle(1);
+                            CustomRadio.Toggle(1);
+                            ActivateBtn.Toggle(1);
+
+                            if(CustomRadio.GetState() == BST_CHECKED)
+                            {
+                                CustomBtn.Toggle(1);
+                            }
+                        }
                     }
                 }
                 break;
