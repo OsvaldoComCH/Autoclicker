@@ -57,9 +57,13 @@ class Button : public Window
     Button(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Window(Parent, L"BUTTON", Text, XPos, YPos, Width, Height, Style){}
 
-    int GetState()
+    short GetState()
     {
         return (int)SendMessage(hwnd, BM_GETSTATE, 0, 0);
+    }
+    void SetState(short State)
+    {
+        SendMessage(hwnd, BM_SETSTATE, (WPARAM)State, 0);
     }
 };
 
@@ -83,9 +87,13 @@ class RadioButton : public Button
     RadioButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTORADIOBUTTON){}
 
-    int GetState()
+    short GetState()
     {
         return (int)SendMessage(hwnd, BM_GETCHECK, 0, 0);
+    }
+    void SetState(short State)
+    {
+        SendMessage(hwnd, BM_SETCHECK, (WPARAM)State, 0);
     }
 };
 
@@ -97,20 +105,25 @@ class CheckBox : public Button
     CheckBox(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : Button(Parent, Text, XPos, YPos, Width, Height, Style | BS_AUTOCHECKBOX){}
 
-    int GetState()
+    short GetState()
     {
         return (int)SendMessage(hwnd, BM_GETCHECK, 0, 0);
+    }
+    void SetState(short State)
+    {
+        SendMessage(hwnd, BM_SETCHECK, (WPARAM)State, 0);
     }
 };
 
 class ToggleButton : public CheckBox
 {
     public:
+    int KeyCode;
     ToggleButton(){}
 
     ToggleButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
     : CheckBox(Parent, Text, XPos, YPos, Width, Height, Style | BS_PUSHLIKE){}
-}
+};
 
 class Edit : public Window
 {
@@ -128,7 +141,7 @@ class NumberInput : public Edit
     NumberInput(HWND Parent, int XPos, int YPos, int Width, int Height, int Style)
     : Edit(Parent, NULL, XPos, YPos, Width, Height, Style | WS_DLGFRAME | ES_RIGHT | ES_NUMBER){}
 
-    unsigned long GetNumber()
+    unsigned GetNumber()
     {
         wchar_t Text[11];
         GetWindowText(hwnd, Text, 11);
