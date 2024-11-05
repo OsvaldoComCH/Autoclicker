@@ -6,7 +6,7 @@
 #include <cstring>
 #include "controls.cpp"
 
-void KeybdRead(wctrls::ToggleButton * Button, int KeyCode)
+int KeybdRead(wctrls::ToggleButton * Button, int KeyCode)
 {
     Button->SetState(BST_UNCHECKED);
     /*
@@ -60,8 +60,19 @@ void KeybdRead(wctrls::ToggleButton * Button, int KeyCode)
             Button->SetText((wchar_t *) &Key);
         }else
         {
-            return;
+            return 1;
         }
     }
-    Button->KeyCode = KeyCode;
+    return 0;
+}
+
+void SyncEdits(wctrls::NumberInput * Modified, wctrls::NumberInput * Other)
+{
+    unsigned Number = 1000000 / Modified->GetNumber();
+    if(!Number)
+    {
+        Number = 1;
+        Modified->SetNumber(1000000);
+    }
+    Other->SetNumber(Number);
 }

@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include <string>
+#include "AlarmClock.hpp"
 
 namespace wctrls
 {
@@ -35,7 +36,7 @@ class Window
 
     void SetText(const wchar_t * Text)
     {
-        SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)Text);
+        SetWindowText(hwnd, Text);
     }
 
     void GetText(wchar_t * Buffer, int Size)
@@ -118,7 +119,6 @@ class CheckBox : public Button
 class ToggleButton : public CheckBox
 {
     public:
-    int KeyCode;
     ToggleButton(){}
 
     ToggleButton(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
@@ -145,7 +145,16 @@ class NumberInput : public Edit
     {
         wchar_t Text[11];
         GetWindowText(hwnd, Text, 11);
-        return std::stoul(Text, nullptr);
+        unsigned Number;
+        swscanf(Text, L"%u", &Number);
+        return Number;
+    }
+
+    void SetNumber(unsigned Number)
+    {
+        wchar_t Text[11];
+        swprintf(Text, L"%u", Number);
+        SetWindowText(hwnd, Text);
     }
 };
 

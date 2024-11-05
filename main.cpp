@@ -20,6 +20,9 @@ wctrls::CheckBox ToggleCheck;
 
 wctrls::GroupBox Group;
 
+char ClickMode = 0, ToggleMode = 0;
+int RapidFireKey = VK_LBUTTON, ActivateKey = VK_NUMPAD0;
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
     using namespace wctrls;
@@ -80,15 +83,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                     if((HWND)lParam == LeftRadio.GetHandle())
                     {
                         CustomBtn.Toggle(0);
+                        RapidFireKey = VK_LBUTTON;
                     }else
                     if((HWND)lParam == RightRadio.GetHandle())
                     {
                         CustomBtn.Toggle(0);
+                        RapidFireKey = VK_RBUTTON;
+                    }else
+                    if((HWND)lParam == ToggleCheck.GetHandle())
+                    {
+                        if(ToggleCheck.GetState() == BST_CHECKED)
+                        {
+                            ToggleMode = 1;
+                        }else
+                        {
+                            ToggleMode = 0;
+                        }
                     }else
                     if((HWND)lParam == StartBtn.GetHandle())
                     {
                         if(StartBtn.GetState() == BST_CHECKED)
                         {
+                            ClickMode = 1;
                             StartBtn.SetText(L"Stop");
                             Title.SetText(L"Autoclicker is running...");
                             
@@ -102,6 +118,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                             ActivateBtn.Toggle(0);
                         }else
                         {
+                            ClickMode = 0;
                             StartBtn.SetText(L"Start");
                             Title.SetText(L"Autoclicker has stopped.");
 
@@ -186,11 +203,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                 {
                     if((HWND)lParam == SpeedEdit.GetHandle())
                     {
-
+                        SyncEdits(&SpeedEdit, &IntervalEdit);
                     }else
                     if((HWND)lParam == IntervalEdit.GetHandle())
                     {
-
+                        SyncEdits(&IntervalEdit, &SpeedEdit);
                     }
                 }
                 break;
@@ -201,7 +218,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             if(CustomBtn.GetState() == BST_CHECKED)
             {
-                KeybdRead(&CustomBtn, (int)wParam);
+                if(!KeybdRead(&CustomBtn, (int)wParam))
+                {
+                    RapidFireKey = (int)wParam;
+                }
 
                 Title.SetText(L"Vroom-Vroom Autoclicker");
 
@@ -216,7 +236,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             }else
             if(ActivateBtn.GetState() == BST_CHECKED)
             {
-                KeybdRead(&ActivateBtn, (int)wParam);
+                if(!KeybdRead(&ActivateBtn, (int)wParam))
+                {
+                    ActivateKey = (int)wParam;
+                }
 
                 Title.SetText(L"Vroom-Vroom Autoclicker");
                 
@@ -290,14 +313,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     );
 
     ShowWindow(hwnd, nCmdShow);
-    //FreeConsole();
+    FreeConsole();
 
     MSG Msg;
 
-    while(GetMessage(&Msg, hwnd, 0, 0) > 0)
+    while(1)
     {
-        TranslateMessage(&Msg);
-        DispatchMessage(&Msg);
+        if(ClickMode)
+        {
+            if(PeekMessage(&Msg, hwnd, 0, 0))
+            {
+                TranslateMessage(&Msg);
+                DispatchMessage(&Msg);
+            }
+        }else
+        {
+            GetMessage(&Msg, hwnd, 0, 0);
+            TranslateMessage(&Msg);
+            DispatchMessage(&Msg);
+        }
     }
 
     return 0;
