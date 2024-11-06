@@ -8,6 +8,7 @@ g++ main.cpp -o Autoclicker.exe -O2 -lgdi32
 
 #include <windows.h>
 #include <cstdio>
+#include <iostream>
 #include "ctrlfunctions.cpp"
 
 wctrls::Button CloseBtn, MinimizeBtn;
@@ -15,13 +16,13 @@ wctrls::ToggleButton CustomBtn, ActivateBtn, StartBtn;
 wctrls::NumberInput SpeedEdit, IntervalEdit;
 wctrls::Label SpeedLabel, IntervalLabel, CPSLabel, UsLabel, Title, ActivateLabel;
 wctrls::RadioButton LeftRadio, RightRadio, CustomRadio;
-
 wctrls::CheckBox ToggleCheck;
-
 wctrls::GroupBox Group;
 
-char ClickMode = 0, ToggleMode = 0;
-int RapidFireKey = VK_LBUTTON, ActivateKey = VK_NUMPAD0;
+AlarmClock Alarm;
+
+bool ClickMode = 0, ToggleMode = 0, CanToggle = 1, Toggled = 0;
+unsigned RapidFireKey = VK_LBUTTON, ActivateKey = VK_NUMPAD0, Interval = 50000;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
@@ -32,8 +33,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         {
             Title = Label(hwnd, L"Vroom-Vroom Autoclicker", 10, 5, 110, 30, ES_MULTILINE | ES_CENTER);
 
-            SpeedEdit = NumberInput(hwnd, 10, 55, 50, 20, 0);
-            IntervalEdit = NumberInput(hwnd, 95, 55, 50, 20, 0);
+            SpeedEdit = NumberInput(hwnd, L"20", 10, 55, 50, 20, ES_MULTILINE);
+            IntervalEdit = NumberInput(hwnd, L"50000", 95, 55, 50, 20, ES_MULTILINE);
             CloseBtn = Button(hwnd, L"X", 150, 5, 20, 20, 0);
             MinimizeBtn = Button(hwnd, L"-", 125, 5, 20, 20, 0);
             SpeedLabel = Label(hwnd, L"Speed", 10, 40, 70, 15, 0);
@@ -62,6 +63,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             StartBtn = ToggleButton(hwnd, L"Start", 30, 290, 120, 30, BS_PUSHBUTTON);
         }
         break;
+        case WM_CLOSE:
+        {
+            ClickMode = 0;
+            DestroyWindow(hwnd);
+        }
+        break;
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+        }
+        break;
         case WM_COMMAND:
         {
             switch(HIWORD(wParam))
@@ -70,7 +82,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                 {
                     if((HWND)lParam == CloseBtn.GetHandle())
                     {
-                        SendMessage(hwnd, WM_CLOSE, 0, 0);
+                        PostMessage(hwnd, WM_CLOSE, 0, 0);
                     }else
                     if((HWND)lParam == MinimizeBtn.GetHandle())
                     {
@@ -105,6 +117,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
                         if(StartBtn.GetState() == BST_CHECKED)
                         {
                             ClickMode = 1;
+                            Interval = IntervalEdit.GetNumber();
+
+                            Toggled = 0;
+                            CanToggle = 1;
+
                             StartBtn.SetText(L"Stop");
                             Title.SetText(L"Autoclicker is running...");
                             
@@ -257,30 +274,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-        /*
-        case WM_CTLCOLORBTN:
-        case WM_CTLCOLORSTATIC:
-        {
-            if((HWND)lParam == LeftRadio.GetHandle() ||
-            (HWND)lParam == RightRadio.GetHandle() ||
-            (HWND)lParam == CustomRadio.GetHandle())
-            {
-                SetBkMode((HDC)wParam, OPAQUE);
-                return (LRESULT)GetStockObject(NULL_BRUSH);
-            }
-            return (LRESULT) GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
-        }
-        break;
-        */
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-            /*
-            HBRUSH Brush = CreateSolidBrush(RGB(240,240,240));
-            FillRect(hdc, &ps.rcPaint, Brush);
-            DeleteObject(Brush);
-            */
+            BeginPaint(hwnd, &ps);
             EndPaint(hwnd, &ps);
         }
         break;
@@ -289,6 +286,75 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
         break;
     }
     return 0;
+}
+
+static inline void ClickHold()
+{
+    if(GetAsyncKeyState(ActivateKey) & 0x8000)
+    {
+        if(RapidFireKey < 3)
+        {
+            POINT Cursor;
+            GetCursorPos(&Cursor);
+            if(RapidFireKey & 1)
+            {
+                mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, Cursor.x, Cursor.y, 0, 0);
+            }else
+            {
+                mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, Cursor.x, Cursor.y, 0, 0);
+            }
+        }else
+        {
+            INPUT KeyPress;
+            KeyPress.type = 1;
+            KeyPress.ki.wVk = RapidFireKey;
+            SendInput(1, &KeyPress, sizeof(INPUT));
+        }
+        Alarm(Interval);
+    }else
+    {
+        Sleep(50);
+    }
+}
+
+static inline void ClickToggle()
+{
+    if((GetAsyncKeyState(ActivateKey) & 0x8000))
+    {
+        if(CanToggle)
+        {
+            Toggled = !Toggled;
+            CanToggle = 0;
+        }
+    }else
+    {
+        CanToggle = 1;
+    }
+    if(!Toggled)
+    {
+        Sleep(50);
+        return;
+    }
+
+    if(RapidFireKey < 3)
+    {
+        POINT Cursor;
+        GetCursorPos(&Cursor);
+        if(RapidFireKey & 1)
+        {
+            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, Cursor.x, Cursor.y, 0, 0);
+        }else
+        {
+            mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, Cursor.x, Cursor.y, 0, 0);
+        }
+    }else
+    {
+        INPUT KeyPress;
+        KeyPress.type = 1;
+        KeyPress.ki.wVk = RapidFireKey;
+        SendInput(1, &KeyPress, sizeof(INPUT));
+    }
+    Alarm(Interval);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -316,19 +382,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     FreeConsole();
 
     MSG Msg;
-
     while(1)
     {
         if(ClickMode)
         {
-            if(PeekMessage(&Msg, hwnd, 0, 0))
+            if(PeekMessage(&Msg, hwnd, 0, 0, PM_REMOVE))
             {
-                TranslateMessage(&Msg);
-                DispatchMessage(&Msg);
+                if(Msg.message != WM_KEYDOWN)
+                {
+                    TranslateMessage(&Msg);
+                    DispatchMessage(&Msg);
+                }
             }
+            if(ToggleMode)
+            {
+                ClickToggle();
+            }else
+            {
+                ClickHold();
+            }            
         }else
         {
-            GetMessage(&Msg, hwnd, 0, 0);
+            if(GetMessage(&Msg, hwnd, 0, 0) <= 0){break;}
             TranslateMessage(&Msg);
             DispatchMessage(&Msg);
         }

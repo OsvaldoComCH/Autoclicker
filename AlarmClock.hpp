@@ -25,13 +25,15 @@ class AlarmClock
             return;
         }
 
-        time_point<high_resolution_clock, microseconds> DueTime =
-        time_point_cast<microseconds>(high_resolution_clock::now() + (microseconds)(Microseconds - Error));
+        unsigned SleepFor = Microseconds - Error;
 
-        if(DueTime.time_since_epoch().count() > 2000)
+        time_point<high_resolution_clock, microseconds> DueTime =
+        time_point_cast<microseconds>(high_resolution_clock::now() + (microseconds)(SleepFor));
+
+        if(SleepFor > 2000)
         {
             timeBeginPeriod(1);
-            Sleep((DueTime.time_since_epoch() / 1000).count() - 1);
+            Sleep((SleepFor / 1000) - 1);
             timeEndPeriod(1);
         }
 

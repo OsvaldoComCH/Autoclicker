@@ -138,8 +138,8 @@ class NumberInput : public Edit
 {
     public:
     NumberInput(){}
-    NumberInput(HWND Parent, int XPos, int YPos, int Width, int Height, int Style)
-    : Edit(Parent, NULL, XPos, YPos, Width, Height, Style | WS_DLGFRAME | ES_RIGHT | ES_NUMBER){}
+    NumberInput(HWND Parent, const wchar_t * Text, int XPos, int YPos, int Width, int Height, int Style)
+    : Edit(Parent, Text, XPos, YPos, Width, Height, Style | WS_DLGFRAME | ES_RIGHT | ES_NUMBER){}
 
     unsigned GetNumber()
     {

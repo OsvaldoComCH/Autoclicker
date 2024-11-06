@@ -68,11 +68,15 @@ int KeybdRead(wctrls::ToggleButton * Button, int KeyCode)
 
 void SyncEdits(wctrls::NumberInput * Modified, wctrls::NumberInput * Other)
 {
-    unsigned Number = 1000000 / Modified->GetNumber();
-    if(!Number)
+    unsigned N1 = Modified->GetNumber();
+    if(!N1)
     {
-        Number = 1;
+        N1 = 1;
+    }
+    unsigned N2 = 1000000 / N1;
+    if(!N2)
+    {
         Modified->SetNumber(1000000);
     }
-    Other->SetNumber(Number);
+    Other->SetNumber(N2);
 }
